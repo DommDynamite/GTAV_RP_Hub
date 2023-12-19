@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Pixel RP Stream Hub</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="navbar">
+    <select id="page-selector" class="page-selector">
+        <option value="index.html">ONX RP</option>
+        <option value="nopixel.html" selected aria-selected="true">No Pixel RP</option>
+        <!-- Add more options for additional pages as needed -->
+    </select>
+</div>
+
+<div class="main-stage">
+    <div id="main-stream" class="main-stream"></div> <!-- Container for the main, larger stream -->
+    <div id="marked-streams" class="marked-streams"></div> <!-- Container for other marked streams -->
+</div>
+
+
+<div class="container">
+    <div id="stream-grid" class="stream-grid">
+        <!-- Streams will be dynamically inserted here -->
+    </div>
+    <div class="sidebar">
+        <input type="text" id="search-box" placeholder="Search...">
+    
+        <h2>Filters</h2>
+        <ul class="filter-list">
+            <li><a href="#" class="filter-link" data-filter="">All</li>
+            <li><a href="#" class="filter-link" data-filter="Civ,Civilian,Citizen,Clown,Juggalo">Civilian</li>
+            <li><a href="#" class="filter-link" data-filter="Cops,Police,Sheriff,Agent,Deputy,Patrol,Security">Cops</li>
+            <li><a href="#" class="filter-link" data-filter="Criminals,Crim,Crime,Criminal,Crime RP,Mafia,Yakuza">Criminals</li>
+            <li><a href="#" class="filter-link" data-filter="EMS,Doctor,Doc">EMS</li>
+            <li><a href="#" class="filter-link" data-filter="Gov,Government,DMV,Justice,Justice System,Lawyer,Law,Attorney,Mayor,MAYOR,Secretary of Defence">Government</li>
+        </ul>
+    </div>
+</div>
+
+<script src="https://embed.twitch.tv/embed/v1.js"></script>
+<script src="script_nopixel.js"></script>
+
+</body>
+</html>
+
