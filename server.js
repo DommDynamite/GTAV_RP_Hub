@@ -107,7 +107,7 @@ async function fetchStreams(gameId, cursor = '') {
         // Log the number of streams fetched before filtering
         console.log(`Number of streams fetched: ${allStreams.length}`);
 
-    } while (paginationCursor && allStreams.length < 100); // Set a limit to prevent excessive requests
+    } while (paginationCursor && allStreams.length < 200); // Set a limit to prevent excessive requests
 
     return allStreams;
 }
@@ -154,7 +154,7 @@ app.get('/api/streams', async (req, res) => {
         }
 
         // Retrieve title filters from query parameters or use default
-        const titleFilters = req.query.titles ? req.query.titles.split(',') : ['ONX', 'ONXRP', 'ONX.gg', 'ONX RP'];
+        const titleFilters = req.query.titles ? req.query.titles.split(',') : ['ONX', 'ONXRP', 'ONX.gg', 'ONX RP', 'OnxRP', 'Onx RP', 'onxrp', 'onx RP'];
         
         // Fetch all streams for the game
         const streams = await fetchStreams(gameId);

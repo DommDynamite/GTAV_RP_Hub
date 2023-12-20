@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    setHideButtonListener();
+
     // Initially hide the main stage if it's empty
     toggleMainStageVisibility(mainStreamContainer);
 });

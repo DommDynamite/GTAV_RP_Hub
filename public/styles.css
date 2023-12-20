@@ -14,7 +14,7 @@ body, html {
   font-weight: bold;
   font-size: 2em;
   margin: 10;
-  height: 40px;
+  height: 30px;
 }
 .page-selector {
   background-color: transparent;
@@ -47,7 +47,7 @@ body, html {
   display: flex;
   justify-content: space-between;
   padding: 20px;
-  height: calc(100% - 40px); /* Adjusted for navbar */
+  height: calc(100% - 90px); /* Adjusted for navbar */
   box-sizing: border-box;
 }
 .stream-grid {
@@ -65,11 +65,12 @@ body, html {
   color: white;
   width: 45%;
   height: auto;
-  min-height: 400px;
+  min-height: 48%;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
+  transition: transform 1s ease-in-out;
 }
 .sidebar {
   width: fit-content;
@@ -111,17 +112,52 @@ input[type="text"] {
 }
 
 .main-stage {
-  display: flex;
+  display: none; /* Initially hidden */
+  animation-name: slideDown;
+  animation-duration: 1s; /* Adjust duration as needed */
+  animation-fill-mode: forwards; /* Keeps the element in the final state after the animation */
   width: 100%;
   flex-direction: column;
   margin-bottom: 20px;
+  justify-content: center;
 }
-
 .main-stream {
   width: 100%;
   height: 100vh; /* Larger size for main stream */
   margin-bottom: 10px;
 }
+.stream-main {
+  width: 100%;
+  height: 100%;
+}
+.main-stage.hide {
+  animation-name: slideUp;
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideDown {
+  from {
+      transform: translateY(-100%);
+      opacity: 0;
+  }
+  to {
+      transform: translateY(0);
+      opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+      transform: translateY(0%);
+      opacity: 1;
+  }
+  to {
+      transform: translateY(-100%);
+      opacity: 0;
+  }
+}
+
 
 .marked-streams {
   display: flex;
@@ -133,21 +169,18 @@ input[type="text"] {
   height: 200px;
 }
 
-.stream-main {
-width: 100%;
-height: 100%;
-}
+
 
 .stream-controls {
-position: absolute;
-top: 95%;
-/*left: 0;*/
-z-index: 10; /* Ensure controls are above the video */
-background-color: rgba(0, 0, 0, 0.5); /* Optional: for better visibility */
-padding: 5px;
-display: flex;
-gap: 5px;
-justify-self: right;
+  position: absolute;
+  top: 95%;
+  /*left: 0;*/
+  z-index: 10; /* Ensure controls are above the video */
+  background-color: rgba(0, 0, 0, 0.5); /* Optional: for better visibility */
+  padding: 5px;
+  display: flex;
+  gap: 5px;
+  justify-self: right;
 
 }
 
@@ -159,6 +192,18 @@ justify-self: right;
 .hidden {
 display: none;
 }
+
+.main-stream-hide-button {
+  background-image: url('img\hide_arrow.png');
+  background-size: cover; 
+  width: 100%; 
+  height: 40px; 
+  border: none;
+  background-color: #2d2931;
+  cursor: pointer;
+  image-resolution: 100,40;
+  display: block;
+} 
 
 
 
@@ -186,4 +231,26 @@ display: none;
 .stream-grid {
   scrollbar-width: thin; /* 'auto' or 'thin' */
   scrollbar-color: #2d2931 #000000; /* thumb and track color */
+}
+
+
+
+/* For the scrollbar itself */
+::-webkit-scrollbar {
+  width: 25px; /* Adjust the width as needed */
+}
+
+/* For the scrollbar track */
+::-webkit-scrollbar-track {
+  background: #000000; /* Optional: scrollbar track color */
+}
+
+/* For the scrollbar handle */
+::-webkit-scrollbar-thumb {
+  background: #23272a; /* Optional: scrollbar handle color */
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #2c2f33; /* Optional: scrollbar handle hover color */
 }

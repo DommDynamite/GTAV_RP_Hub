@@ -1,4 +1,4 @@
-import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv} from '/Common.js'
+import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv, setHideButtonListener} from '/Common.js'
 
 document.addEventListener('DOMContentLoaded', function() {
     const mainStreamContainer = document.getElementById('main-stream');
@@ -46,6 +46,8 @@ document.addEventListener('DOMContentLoaded', function() {
             loadCheckedState();
         });
     });
+
+    setHideButtonListener();
 
     // Initially hide the main stage if it's empty
     toggleMainStageVisibility(mainStreamContainer);

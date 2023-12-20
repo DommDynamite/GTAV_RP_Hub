@@ -1,5 +1,3 @@
-
-
 export function displayStreams(streams) {
     const streamGrid = document.getElementById('stream-grid');
     streamGrid.innerHTML = ''; // Clear existing streams
@@ -36,8 +34,8 @@ export function displayStreams(streams) {
         button.addEventListener('click', () => setAsMainStage(stream));
 
         new Twitch.Embed(streamDiv, {
-            width: 1280,
-            height: 720,
+            width: '100%',
+            height: '100%',
             channel: stream.user_login, // Adjust based on your API response
             layout: 'video',
             muted: true,
@@ -65,6 +63,7 @@ export function displayStreams(streams) {
 }
 
 export function setAsMainStage(stream) {
+    const mainStageContainer = document.getElementById('main-stage');
     const mainStreamContainer = document.getElementById('main-stream');
     mainStreamContainer.innerHTML = ''; // Clear the current main stream
 
@@ -83,10 +82,14 @@ export function setAsMainStage(stream) {
 }
 
 export function toggleMainStageVisibility(mainStreamContainer) {
+    const mainStageContainer = document.getElementById('main-stage');
+
     if (mainStreamContainer.children.length === 0) {
-        mainStreamContainer.classList.add('hidden');
+        mainStageContainer.style.display = 'none';
     } else {
-        mainStreamContainer.classList.remove('hidden');
+        mainStageContainer.classList.remove('hidden');
+        mainStageContainer.style.display = 'block'; // Make the element visible
+        mainStageContainer.style.animationPlayState = 'running';
     }
 }
 
@@ -127,9 +130,38 @@ export function moveStreamDiv(streamId, isChecked) {
     const streamDiv = document.querySelector(`div[data-stream-id="${streamId}"]`);
     const streamGrid = document.getElementById('stream-grid');
 
+    // Calculate the distance to move
+    const distanceToMove = streamDiv.offsetTop - streamGrid.offsetTop;
+
     if (isChecked) {
-        streamGrid.prepend(streamDiv); // Move the stream div to the top if checked
+        // Apply a negative transform to move it up
+        streamDiv.style.transform = `translateY(-${distanceToMove}px)`;
     } else {
-        streamGrid.appendChild(streamDiv); // Move the stream div to the end if unchecked
+        // Reset transform when moving it back to its original position
+        streamDiv.style.transform = 'translateY(0)';
     }
+
+    // Ensure the transition has time to complete
+    setTimeout(() => {
+        if (isChecked) {
+            streamGrid.prepend(streamDiv);
+        } else {
+            streamGrid.appendChild(streamDiv);
+        }
+        // Reset the transform style
+        streamDiv.style.transform = '';
+    }, 1000); // Match this duration to the CSS transition duration
+}
+
+export function setHideButtonListener(){
+    const hideButton = document.getElementById('main-stage-hide-button');
+    const mainStreamContainer = document.getElementById('main-stream');
+
+    hideButton.addEventListener('click', function() {
+        // Clear the main stream container
+        mainStreamContainer.innerHTML = '';
+
+        // Run the toggleMainStageVisibility function
+        toggleMainStageVisibility(mainStreamContainer);
+    });
 }
