@@ -211,7 +211,7 @@ display: none;
 
 /* Style the scrollbar in Webkit-based browsers (e.g., Chrome, Safari) */
 .stream-grid::-webkit-scrollbar {
-  width: 12px; /* width of the entire scrollbar */
+  width: 20px; /* width of the entire scrollbar */
 }
 
 .stream-grid::-webkit-scrollbar-track {
