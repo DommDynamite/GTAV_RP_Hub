@@ -107,7 +107,7 @@ async function fetchStreams(gameId, cursor = '') {
         // Log the number of streams fetched before filtering
         console.log(`Number of streams fetched: ${allStreams.length}`);
 
-    } while (paginationCursor && allStreams.length < 200); // Set a limit to prevent excessive requests
+    } while (paginationCursor && allStreams.length < 500); // Set a limit to prevent excessive requests
 
     return allStreams;
 }
