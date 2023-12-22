@@ -35,18 +35,20 @@ document.addEventListener('DOMContentLoaded', function() {
             filterLinks.forEach(link => link.classList.remove('active'));
             // Add 'active' class to the clicked link
             link.classList.add('active');
-
+        
             const filterCriteria = link.getAttribute('data-filter').split(','); // Split the data-filter into an array
             const filteredStreams = allStreams.filter(stream => {
-                return filterCriteria.some(criteria => 
-                    stream.title.toLowerCase().includes(criteria.toLowerCase()) ||
-                    stream.tags.some(tag => tag.toLowerCase().includes(criteria.toLowerCase()))
-                );
+                return filterCriteria.some(criteria => {
+                    const regex = new RegExp("\\b" + criteria.trim().toLowerCase() + "\\b"); // Match whole word
+                    return regex.test(stream.title.toLowerCase()) ||
+                           stream.tags.some(tag => regex.test(tag.toLowerCase()));
+                });
             });
             displayStreams(filteredStreams);
             loadCheckedState();
         });
     });
+
 
     setHideButtonListener();
 
