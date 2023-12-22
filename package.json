@@ -2,7 +2,7 @@
   "name": "onx-streams-page",
   "version": "1.0.0",
   "description": "A web page for aggregate streams that are related to ONX.gg",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "onx_test"
   },
