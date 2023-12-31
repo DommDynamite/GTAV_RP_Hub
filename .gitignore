@@ -16,3 +16,6 @@ npm-debug.log*
 
 # Optional eslint cache
 .eslintcache
+
+# ignore iisnode folder used for hosting
+iisnode/
