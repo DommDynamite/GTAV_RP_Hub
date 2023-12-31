@@ -17,7 +17,7 @@ app.use(express.static('public'));
 
 // Route for the main page
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
+    res.sendFile(__dirname + '/public/onx.html');
 });
 
 // OAuth callback route
