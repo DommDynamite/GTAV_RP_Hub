@@ -262,4 +262,11 @@ export function setHideButtonListener(){
             // Handle error (e.g., show a message to the user)
         }
     });
+
+    const pageSelector = document.getElementById('page-selector');
+
+        pageSelector.addEventListener('change', function() {
+            const selectedPage = this.value;
+            window.location.href = selectedPage; // Navigate to the selected page
+        });
 }

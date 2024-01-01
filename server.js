@@ -160,25 +160,28 @@ app.get('/api/streams', async (req, res) => {
         const streams = await fetchStreams(gameId);
 
         // Fetch channel information for the streams
-        const broadcasterIds = streams.map(stream => stream.user_id);
+        const broadcasterIds = streams.map(stream => stream.user_id).filter(id => id != null); // Filter out null or undefined ids
         const channelsInfo = await fetchChannelInfo(broadcasterIds);
 
         // Filter the streams based on channel info tags and stream titles
         const filteredStreams = streams.filter(stream => {
-            const channel = channelsInfo.find(c => c.broadcaster_id === stream.user_id);
-        
+            // Skip streams without a broadcaster_id
+            if (!stream.user_id) return false;
+
+            const channel = channelsInfo.find(c => c && c.broadcaster_id === stream.user_id);
+            if (!channel) return false; // Skip if channel info is not found
+
             // Using a regular expression to match whole words
             const titleMatches = titleFilters.some(filter => {
                 const regex = new RegExp(`\\b${filter}\\b`, 'i'); // \b is a word boundary; 'i' for case-insensitive
                 return regex.test(stream.title);
             });
         
-            const tagMatches = channel && channel.tags_ids && titleFilters.some(filter => channel.tags_ids.includes(filter));
+            const tagMatches = channel.tags_ids && titleFilters.some(filter => channel.tags_ids.includes(filter));
         
             return titleMatches || tagMatches;
         });
         
-
         console.log('Twitch API response:', filteredStreams);
         res.json(filteredStreams);
 
@@ -187,6 +190,7 @@ app.get('/api/streams', async (req, res) => {
         res.status(500).send(`Internal Server Error: ${error.message}`);
     }
 });
+
 
   
 
