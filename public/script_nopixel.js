@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchBox = document.getElementById('search-box');
     const filterLinks = document.querySelectorAll('.filter-link');
     let allStreams = [];
-    const newTitleFilters = 'nopixel,No Pixel,NO PIXEL,NOPIXEL,NoPixel';
+    const newTitleFilters = 'nopixel, No Pixel, NO PIXEL, NOPIXEL, NoPixel';
 
     fetch(`/api/streams?titles=${encodeURIComponent(newTitleFilters)}`)
         .then(response => response.json())
