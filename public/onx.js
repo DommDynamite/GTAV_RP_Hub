@@ -1,17 +1,20 @@
-import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv, setHideButtonListener} from '/Common.js'
+import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv, setHideButtonListener, displayMoreStreams} from '/Common.js'
+let allStreams = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     const mainStreamContainer = document.getElementById('main-stream');
     const markedStreamsContainer = document.getElementById('marked-streams');
     const searchBox = document.getElementById('search-box');
     const filterLinks = document.querySelectorAll('.filter-link');
-    let allStreams = [];
+    //let allStreams = [];
+    const titleFilters = ['ONX', 'ONXRP', 'ONX.gg', 'ONX RP', 'OnxRP', 'Onx RP', 'onxrp', 'onx RP', '!ONX'];
+    const tagFilters = []; // Add tag filters if needed
 
     fetch('/api/streams')
         .then(response => response.json())
         .then(streams => {
-            allStreams = streams; // Save all fetched streams
-            displayStreams(streams); // Display all streams initially
+            //allStreams = streams; // Save all fetched streams
+            allStreams = displayStreams(streams, titleFilters, tagFilters); // Display all streams initially
         })
         .catch(error => {
             console.error('Error loading streams:', error);
@@ -50,6 +53,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     setHideButtonListener();
+
+    const streamGrid = document.getElementById('stream-grid');
+
+    streamGrid.addEventListener('scroll', () => {
+        // Check if the user scrolled near the bottom of the container
+        if (streamGrid.scrollTop + streamGrid.clientHeight >= streamGrid.scrollHeight - 100) {
+            // Load more streams when nearing the bottom
+            displayMoreStreams(allStreams);
+        }
+    });
 
     // Initially hide the main stage if it's empty
     toggleMainStageVisibility(mainStreamContainer);

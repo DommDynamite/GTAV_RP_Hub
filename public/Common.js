@@ -1,21 +1,44 @@
 let activeStreams = {}; // Global variable to keep track of active streams
+let loadedStreamPositions = {};
+let currentOffset = 0;
+const limit = 10; // Number of streams to load each time
 
 
-export function displayStreams(streams) {
+
+export function displayStreams(streams, titleFilters, tagFilters) {
     const streamGrid = document.getElementById('stream-grid');
     const currentStreamIds = Object.keys(activeStreams);
 
-    if (streams.length > 0) {
+    // Apply title and tag filters
+    const filteredStreams = streams.filter(stream => {
+        const titleMatches = titleFilters.some(filter => {
+            const regex = new RegExp("\\b" + filter.trim().toLowerCase() + "\\b");
+            return regex.test(stream.title.toLowerCase());
+        });
+
+        const tagMatches = tagFilters.length > 0 && stream.tags && tagFilters.some(filter => {
+            const regex = new RegExp("\\b" + filter.trim().toLowerCase() + "\\b");
+            return stream.tags.some(tag => regex.test(tag.toLowerCase()));
+        });
+
+        return titleMatches || tagMatches;
+    });
+
+    // Load a set of streams based on currentOffset and limit
+    const paginatedStreams = filteredStreams.slice(currentOffset, currentOffset + limit);
+    currentOffset += limit;    
+
+    if (paginatedStreams.length > 0) {
         // Find streams to remove
         currentStreamIds.forEach(id => {
-            if (!streams.some(stream => stream.id === id)) {
+            if (!paginatedStreams.some(stream => stream.id === id)) {
                 streamGrid.removeChild(activeStreams[id]);
                 delete activeStreams[id];
             }
         });
 
         // Find new streams to add
-        streams.forEach(stream => {
+        paginatedStreams.forEach(stream => {
             if (!activeStreams[stream.id]) {
                 const streamDiv = createStreamDiv(stream);
                 activeStreams[stream.id] = streamDiv; // Add to activeStreams
@@ -26,7 +49,7 @@ export function displayStreams(streams) {
         loadCheckedState();
 
         // Re-sort the streams in the DOM based on the checked state
-        streams.sort((a, b) => {
+        paginatedStreams.sort((a, b) => {
             const aChecked = isChecked(a.id);
             const bChecked = isChecked(b.id);
             return aChecked === bChecked ? 0 : aChecked ? -1 : 1;
@@ -37,6 +60,8 @@ export function displayStreams(streams) {
     }
 
     
+
+    return filteredStreams;
 
 }
 
@@ -236,6 +261,22 @@ export function moveStreamDiv(streamId, isChecked) {
     }, 1000); // Match this duration to the CSS transition duration
 }
 
+export function displayMoreStreams(allStreams) {
+    // Check if there are more streams to load
+    if (currentOffset >= allStreams.length) return;
+
+    const additionalStreams = allStreams.slice(currentOffset, currentOffset + limit);
+    currentOffset += limit;
+
+    // Append these additional streams to the DOM
+    additionalStreams.forEach(stream => {
+        const streamDiv = createStreamDiv(stream);
+        document.getElementById('stream-grid').appendChild(streamDiv);
+    });
+
+    // ...any other logic you need when new streams are added
+}
+
 export function setHideButtonListener(){
     const hideButton = document.getElementById('main-stage-hide-button');
     const mainStreamContainer = document.getElementById('main-stream');
@@ -265,8 +306,12 @@ export function setHideButtonListener(){
 
     const pageSelector = document.getElementById('page-selector');
 
-        pageSelector.addEventListener('change', function() {
-            const selectedPage = this.value;
-            window.location.href = selectedPage; // Navigate to the selected page
-        });
+    pageSelector.addEventListener('change', function() {
+        const selectedPage = this.value;
+        window.location.href = selectedPage; // Navigate to the selected page
+    });
+
+    
+    
+    
 }
