@@ -1,7 +1,8 @@
 let activeStreams = {}; // Global variable to keep track of active streams
 let loadedStreamPositions = {};
 let currentOffset = 0;
-const limit = 10; // Number of streams to load each time
+const limit = 6; // Number of streams to load each time
+const initLoadLimit = 6;
 
 
 
@@ -25,8 +26,8 @@ export function displayStreams(streams, titleFilters, tagFilters) {
     });
 
     // Load a set of streams based on currentOffset and limit
-    const paginatedStreams = filteredStreams.slice(currentOffset, currentOffset + limit);
-    currentOffset += limit;    
+    const paginatedStreams = filteredStreams.slice(currentOffset, currentOffset + initLoadLimit);
+    currentOffset += initLoadLimit;    
 
     if (paginatedStreams.length > 0) {
         // Find streams to remove
@@ -59,7 +60,14 @@ export function displayStreams(streams, titleFilters, tagFilters) {
         });
     }
 
-    
+    paginatedStreams.forEach((stream, index) => {
+        if (!activeStreams[stream.id]) {
+            const streamDiv = createStreamDiv(stream);
+            activeStreams[stream.id] = streamDiv;
+            streamGrid.appendChild(streamDiv);
+            loadedStreamPositions[stream.id] = index; // Store position
+        }
+    });
 
     return filteredStreams;
 
@@ -110,11 +118,22 @@ function createStreamDiv(stream) {
     streamDiv.className = 'stream';
     streamDiv.setAttribute('data-stream-id', stream.id);
 
+    // Channel Name
+    const channelNameDiv = document.createElement('div');
+    channelNameDiv.className = 'channel-name';
+    channelNameDiv.textContent = stream.user_name || 'Channel Name'; // Replace with actual channel name if available
+    streamDiv.appendChild(channelNameDiv);
+
+    // Container for Twitch Embed
+    const embedContainer = document.createElement('div');
+    embedContainer.className = 'embed-container';
+    streamDiv.appendChild(embedContainer);
+
     // Twitch Embed
-    new Twitch.Embed(streamDiv, {
+    new Twitch.Embed(embedContainer, {
         width: '100%',
         height: '100%',
-        channel: stream.user_login, // Adjust based on your API response
+        channel: stream.user_login,
         layout: 'video',
         muted: true,
     });
@@ -145,6 +164,8 @@ function createStreamDiv(stream) {
 
     return streamDiv;
 }
+
+
 
 
 let currentMainStageStream = null; // Global variable to track the current main stage stream
@@ -261,21 +282,70 @@ export function moveStreamDiv(streamId, isChecked) {
     }, 1000); // Match this duration to the CSS transition duration
 }
 
-export function displayMoreStreams(allStreams) {
-    // Check if there are more streams to load
-    if (currentOffset >= allStreams.length) return;
 
-    const additionalStreams = allStreams.slice(currentOffset, currentOffset + limit);
-    currentOffset += limit;
 
-    // Append these additional streams to the DOM
-    additionalStreams.forEach(stream => {
-        const streamDiv = createStreamDiv(stream);
-        document.getElementById('stream-grid').appendChild(streamDiv);
+export function nextPageOfStreams(allStreams) {
+    if (currentOffset >= allStreams.length) {
+        return; // Do nothing if at the end
+    }
+
+    const streamGrid = document.getElementById('stream-grid');
+    streamGrid.innerHTML = ''; // Clear existing streams
+
+    // Calculate the end index for slicing and ensure it doesn't exceed the array length
+    const endIndex = Math.min(currentOffset + limit, allStreams.length);
+    const streamsToLoad = allStreams.slice(currentOffset, endIndex);
+    
+    streamsToLoad.forEach(stream => {
+        // Check if the stream is not already in the DOM
+        if (!document.querySelector(`[data-stream-id="${stream.id}"]`)) {
+            const streamDiv = createStreamDiv(stream);
+            streamGrid.appendChild(streamDiv);
+        }
     });
 
-    // ...any other logic you need when new streams are added
+    currentOffset = endIndex; // Update the offset after loading the streams
 }
+
+
+
+
+export function previousPageOfStreams(allStreams) {
+    if (currentOffset === 0) {
+        return; // Do nothing if at the start
+    }
+
+    const streamGrid = document.getElementById('stream-grid');
+    streamGrid.innerHTML = ''; // Clear existing streams
+
+    // Adjust currentOffset to go to the previous set of streams
+    currentOffset = Math.max(currentOffset - limit, 0);
+
+    // Calculate the start index for the previous page
+    const startIndex = Math.max(currentOffset - limit, 0);
+
+    const streamsToLoad = allStreams.slice(startIndex, startIndex + limit);
+
+    streamsToLoad.forEach(stream => {
+        // Check if the stream is not already in the DOM
+        if (!document.querySelector(`[data-stream-id="${stream.id}"]`)) {
+            const streamDiv = createStreamDiv(stream);
+            streamGrid.appendChild(streamDiv);
+        }
+    });
+
+    // Update currentOffset after loading the streams
+    currentOffset = startIndex;
+}
+
+
+
+
+
+
+
+
+
 
 export function setHideButtonListener(){
     const hideButton = document.getElementById('main-stage-hide-button');
@@ -287,21 +357,6 @@ export function setHideButtonListener(){
 
         // Run the toggleMainStageVisibility function
         toggleMainStageVisibility(mainStreamContainer);
-    });
-
-    document.getElementById('refresh-streams').addEventListener('click', async function(event) {
-        event.preventDefault();
-        try {
-            const response = await fetch('/api/streams');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const streams = await response.json();
-            adjustStreams(streams);
-        } catch (error) {
-            console.error('Error refreshing streams:', error);
-            // Handle error (e.g., show a message to the user)
-        }
     });
 
     const pageSelector = document.getElementById('page-selector');

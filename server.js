@@ -106,6 +106,7 @@ async function fetchStreams(gameId) {
             });
 
             if (response.status === 429) { // Rate limited
+                console.log('Rate Limit Hit, will wait and retry.')
                 const retryAfter = response.headers.get('Retry-After') || 60; // Default to 60 seconds
                 await waitForRateLimitReset(Date.now() / 1000 + parseInt(retryAfter));
                 continue;

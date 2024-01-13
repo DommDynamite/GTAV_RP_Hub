@@ -1,4 +1,4 @@
-import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv, setHideButtonListener, displayMoreStreams} from '/Common.js'
+import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv, setHideButtonListener, nextPageOfStreams, previousPageOfStreams} from '/Common.js'
 let allStreams = [];
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -54,15 +54,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setHideButtonListener();
 
-    const streamGrid = document.getElementById('stream-grid');
+    const scrollDownButton = document.getElementById('scroll-down-button');
+    const scrollUpButton = document.getElementById('scroll-up-button');
 
-    streamGrid.addEventListener('scroll', () => {
-        // Check if the user scrolled near the bottom of the container
-        if (streamGrid.scrollTop + streamGrid.clientHeight >= streamGrid.scrollHeight - 100) {
-            // Load more streams when nearing the bottom
-            displayMoreStreams(allStreams);
-        }
+    console.log('Adding event listeners'); // Debugging log
+
+    scrollDownButton.addEventListener('click', () => {
+        console.log('Down button clicked'); // Debugging log
+        nextPageOfStreams(allStreams);
     });
+
+    scrollUpButton.addEventListener('click', () => {
+        console.log('Up button clicked'); // Debugging log
+        previousPageOfStreams(allStreams);
+    });
+
+    // Initial load of streams
+    nextPageOfStreams(allStreams);
 
     // Initially hide the main stage if it's empty
     toggleMainStageVisibility(mainStreamContainer);
