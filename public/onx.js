@@ -1,17 +1,20 @@
-import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv, setHideButtonListener} from '/Common.js'
+import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv, setHideButtonListener, nextPageOfStreams, previousPageOfStreams} from '/Common.js'
+let allStreams = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     const mainStreamContainer = document.getElementById('main-stream');
     const markedStreamsContainer = document.getElementById('marked-streams');
     const searchBox = document.getElementById('search-box');
     const filterLinks = document.querySelectorAll('.filter-link');
-    let allStreams = [];
+    //let allStreams = [];
+    const titleFilters = ['ONX', 'ONXRP', 'ONX.gg', 'ONX RP', 'OnxRP', 'Onx RP', 'onxrp', 'onx RP', '!ONX'];
+    const tagFilters = []; // Add tag filters if needed
 
     fetch('/api/streams')
         .then(response => response.json())
         .then(streams => {
-            allStreams = streams; // Save all fetched streams
-            displayStreams(streams); // Display all streams initially
+            //allStreams = streams; // Save all fetched streams
+            allStreams = displayStreams(streams, titleFilters, tagFilters); // Display all streams initially
         })
         .catch(error => {
             console.error('Error loading streams:', error);
@@ -50,6 +53,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     setHideButtonListener();
+
+    const scrollDownButton = document.getElementById('scroll-down-button');
+    const scrollUpButton = document.getElementById('scroll-up-button');
+
+    console.log('Adding event listeners'); // Debugging log
+
+    scrollDownButton.addEventListener('click', () => {
+        console.log('Down button clicked'); // Debugging log
+        nextPageOfStreams(allStreams);
+    });
+
+    scrollUpButton.addEventListener('click', () => {
+        console.log('Up button clicked'); // Debugging log
+        previousPageOfStreams(allStreams);
+    });
+
+    // Initial load of streams
+    nextPageOfStreams(allStreams);
 
     // Initially hide the main stage if it's empty
     toggleMainStageVisibility(mainStreamContainer);

@@ -8,6 +8,9 @@ const port = process.env.PORT || 3000;
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+let streamCache = {}; // Cache to store streams data
+
 // Twitch API endpoints
 const OAUTH_ENDPOINT = 'https://id.twitch.tv/oauth2/token';
 const STREAMS_ENDPOINT = 'https://api.twitch.tv/helix/streams';
@@ -82,32 +85,47 @@ async function getTwitchOAuthToken() {
 }
 
 // Function to fetch streams from Twitch API with pagination support
-async function fetchStreams(gameId, cursor = '') {
+async function fetchStreams(gameId) {
     const accessToken = await getTwitchOAuthToken();
     let allStreams = [];
-    let paginationCursor = cursor;
+    let paginationCursor = '';
+    let isRateLimited = false;
+
+    async function waitForRateLimitReset(resetTime) {
+        const waitTime = resetTime * 1000 - Date.now();
+        return new Promise(resolve => setTimeout(resolve, waitTime));
+    }
 
     do {
-        const response = await fetch(`${STREAMS_ENDPOINT}?game_id=${gameId}&first=100&after=${paginationCursor}`, { // Use game_id query parameter
-            headers: {
-                'Client-ID': clientId,
-                'Authorization': `Bearer ${accessToken}`
+        try {
+            const response = await fetch(`${STREAMS_ENDPOINT}?game_id=${gameId}&first=100&after=${paginationCursor}`, {
+                headers: {
+                    'Client-ID': clientId,
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (response.status === 429) { // Rate limited
+                console.log('Rate Limit Hit, will wait and retry.')
+                const retryAfter = response.headers.get('Retry-After') || 60; // Default to 60 seconds
+                await waitForRateLimitReset(Date.now() / 1000 + parseInt(retryAfter));
+                continue;
             }
-        });
 
-        console.log(`Fetching streams for gameId: ${gameId} with cursor: ${cursor}`);
+            const data = await response.json();
+            allStreams = [...allStreams, ...data.data];
+            paginationCursor = data.pagination.cursor;
 
-        const data = await response.json();
-        allStreams = [...allStreams, ...data.data]; // Concatenate the new streams
-
-        paginationCursor = data.pagination.cursor; // Update cursor for next page
-
-        // Log the full data for debugging
-        //console.log('Twitch API response:', data);
-        // Log the number of streams fetched before filtering
-        console.log(`Number of streams fetched: ${allStreams.length}`);
-
-    } while (paginationCursor && allStreams.length < 500); // Set a limit to prevent excessive requests
+            const rateLimitRemaining = response.headers.get('Ratelimit-Remaining');
+            if (rateLimitRemaining && parseInt(rateLimitRemaining) < 5) { // Approaching rate limit
+                const rateLimitReset = response.headers.get('Ratelimit-Reset');
+                await waitForRateLimitReset(parseInt(rateLimitReset));
+            }
+        } catch (error) {
+            console.error('Error fetching streams:', error);
+            break; // Optionally break or implement a retry logic
+        }
+    } while (paginationCursor && allStreams.length < 4000 && !isRateLimited);
 
     return allStreams;
 }
@@ -143,52 +161,29 @@ async function getGameId(gameName) {
     return data.data.length > 0 ? data.data[0].id : null;
 }
 
+// Function to update the cache
+async function updateStreamCache() {
+    try {
+        // Fetch streams and update the cache
+        // This can be customized based on the pages you have
+        const gameId = await getGameId('Grand Theft Auto V');
+        const streams = await fetchStreams(gameId);
+        // ... additional logic to filter and process streams
+        streamCache['Grand Theft Auto V'] = streams; // Example key
+    } catch (error) {
+        console.error('Error updating stream cache:', error);
+    }
+}
+
+// Scheduled task to update the cache
+setInterval(updateStreamCache, CACHE_DURATION);
+updateStreamCache(); // Initial cache update
 
 // Endpoint to get filtered streams with optional title filters from query parameters
-app.get('/api/streams', async (req, res) => {
-    try {
-        const gameName = 'Grand Theft Auto V';
-        const gameId = await getGameId(gameName);
-        if (!gameId) {
-            return res.status(404).send('Game not found');
-        }
-
-        // Retrieve title filters from query parameters or use default
-        const titleFilters = req.query.titles ? req.query.titles.split(',') : ['ONX', 'ONXRP', 'ONX.gg', 'ONX RP', 'OnxRP', 'Onx RP', 'onxrp', 'onx RP'];
-        
-        // Fetch all streams for the game
-        const streams = await fetchStreams(gameId);
-
-        // Fetch channel information for the streams
-        const broadcasterIds = streams.map(stream => stream.user_id).filter(id => id != null); // Filter out null or undefined ids
-        const channelsInfo = await fetchChannelInfo(broadcasterIds);
-
-        // Filter the streams based on channel info tags and stream titles
-        const filteredStreams = streams.filter(stream => {
-            // Skip streams without a broadcaster_id
-            if (!stream.user_id) return false;
-
-            const channel = channelsInfo.find(c => c && c.broadcaster_id === stream.user_id);
-            if (!channel) return false; // Skip if channel info is not found
-
-            // Using a regular expression to match whole words
-            const titleMatches = titleFilters.some(filter => {
-                const regex = new RegExp(`\\b${filter}\\b`, 'i'); // \b is a word boundary; 'i' for case-insensitive
-                return regex.test(stream.title);
-            });
-        
-            const tagMatches = channel.tags_ids && titleFilters.some(filter => channel.tags_ids.includes(filter));
-        
-            return titleMatches || tagMatches;
-        });
-        
-        console.log('Twitch API response:', filteredStreams);
-        res.json(filteredStreams);
-
-    } catch (error) {
-        console.error('Error fetching streams:', error);
-        res.status(500).send(`Internal Server Error: ${error.message}`);
-    }
+app.get('/api/streams', (req, res) => {
+    const gameName = req.query.gameName || 'Grand Theft Auto V'; // Example query parameter
+    const cachedStreams = streamCache[gameName] || [];
+    res.json(cachedStreams);
 });
 
 

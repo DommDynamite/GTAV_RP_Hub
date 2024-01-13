@@ -63,15 +63,32 @@ body, html {
 .stream {
   background-color: #646668;
   color: white;
-  width: 45%;
-  height: auto;
-  min-height: 48%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: fit-content;
+  height: fit-content;
   position: relative;
   transition: transform 1s ease-in-out;
+  margin-bottom: 20px; /* Space between streams */
+  box-sizing: border-box; /* Include padding and borders in the element's total width and height */
 }
+.stream .channel-name {
+  margin-bottom: 10px;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  background-color: #333;
+  display: block;
+}
+.stream .embed-container {
+  width:38vw;
+  display: block;
+  height: 21.55vw;
+}
+.stream .stream-controls {
+  display: block;
+}
+
 .sidebar {
   width: fit-content;
   min-width: 250px;
@@ -174,13 +191,12 @@ input[type="text"] {
 .stream-controls {
   position: absolute;
   top: 95%;
-  /*left: 0;*/
+  left: 45%;
   z-index: 10; /* Ensure controls are above the video */
   background-color: rgba(0, 0, 0, 0.5); /* Optional: for better visibility */
   padding: 5px;
   display: flex;
   gap: 5px;
-  justify-self: right;
 
 }
 
@@ -254,3 +270,24 @@ display: none;
 ::-webkit-scrollbar-thumb:hover {
   background: #2c2f33; /* Optional: scrollbar handle hover color */
 }
+
+.scroll-button-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.scroll-button {
+  width: 5rem;
+}
+
+#scroll-up-button {
+  display: block;
+}
+
+#scroll-down-button {
+  display: block;
+}
+
+
+
