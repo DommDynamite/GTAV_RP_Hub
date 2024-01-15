@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+const CACHE_DURATION = 10 * 60 * 1000; // 5 minutes in milliseconds
 let streamCache = {}; // Cache to store streams data
 
 // Twitch API endpoints
@@ -125,7 +125,7 @@ async function fetchStreams(gameId) {
             console.error('Error fetching streams:', error);
             break; // Optionally break or implement a retry logic
         }
-    } while (paginationCursor && allStreams.length < 4000 && !isRateLimited);
+    } while (paginationCursor && allStreams.length < 4000 && !isRateLimited); 
 
     return allStreams;
 }

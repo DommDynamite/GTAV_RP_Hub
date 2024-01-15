@@ -1,4 +1,4 @@
-import { displayStreams, setAsMainStage, toggleMainStageVisibility, saveCheckedState, loadCheckedState, isChecked, moveStreamDiv, setHideButtonListener, nextPageOfStreams, previousPageOfStreams} from '/Common.js'
+import { displayStreams, setAsMainStage, toggleMainStageVisibility, setHideButtonListener, nextPageOfStreams, previousPageOfStreams, populateWhosOnline} from '/Common.js'
 let allStreams = [];
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
             displayStreams(filteredStreams);
-            loadCheckedState();
         });
     });
 
@@ -70,7 +69,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Initial load of streams
-    nextPageOfStreams(allStreams);
+    //nextPageOfStreams(allStreams);
+
+    //populateWhosOnline(allStreams);
 
     // Initially hide the main stage if it's empty
     toggleMainStageVisibility(mainStreamContainer);
