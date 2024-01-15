@@ -10,6 +10,8 @@ export function displayStreams(streams, titleFilters, tagFilters) {
     const streamGrid = document.getElementById('stream-grid');
     const currentStreamIds = Object.keys(activeStreams);
 
+    const uniqueStreamIds = new Set(); // Set to keep track of unique stream IDs
+
     // Apply title and tag filters
     const filteredStreams = streams.filter(stream => {
         const titleMatches = titleFilters.some(filter => {
@@ -22,7 +24,12 @@ export function displayStreams(streams, titleFilters, tagFilters) {
             return stream.tags.some(tag => regex.test(tag.toLowerCase()));
         });
 
-        return titleMatches || tagMatches;
+        // Check if the stream is unique based on its ID
+        if ((titleMatches || tagMatches) && !uniqueStreamIds.has(stream.id)) {
+            uniqueStreamIds.add(stream.id);
+            return true;
+        }
+        return false;
     });
 
     // Load a set of streams based on currentOffset and limit
@@ -46,9 +53,6 @@ export function displayStreams(streams, titleFilters, tagFilters) {
             }
         });
 
-        // After streams have been added to the DOM, load their checked state
-        loadCheckedState();
-
         // Re-sort the streams in the DOM based on the checked state
         paginatedStreams.sort((a, b) => {
             const aChecked = isChecked(a.id);
@@ -69,51 +73,13 @@ export function displayStreams(streams, titleFilters, tagFilters) {
         }
     });
 
+    populateWhosOnline(filteredStreams);
+
     return filteredStreams;
 
 }
 
-export function adjustStreams(streams) {
-    const streamGrid = document.getElementById('stream-grid');
-    const currentStreamIds = Object.keys(activeStreams);
-
-
-    // Find streams to remove
-    currentStreamIds.forEach(id => {
-        if (!streams.some(stream => stream.id === id)) {
-            streamGrid.removeChild(activeStreams[id]);
-            delete activeStreams[id];
-        }
-    });
-
-    // Find new streams to add
-    streams.forEach(stream => {
-        if (!activeStreams[stream.id]) {
-            const streamDiv = createStreamDiv(stream);
-            activeStreams[stream.id] = streamDiv; // Add to activeStreams
-        }
-    });
-
-    // After streams have been added to the DOM, load their checked state
-    loadCheckedState();
-
-    // Re-sort the streams in the DOM based on the checked state
-    streams.sort((a, b) => {
-        const aChecked = isChecked(a.id);
-        const bChecked = isChecked(b.id);
-        return aChecked === bChecked ? 0 : aChecked ? -1 : 1;
-    }).forEach(stream => {
-        // Append or move existing div to the correct position
-        streamGrid.appendChild(activeStreams[stream.id]);
-    });
-
-
-    
-
-}
-
-
-function createStreamDiv(stream) {
+function createStreamDiv(stream, embedWidth = '100%', embedHeight = '100%', isWatchStream = false) {
     const streamDiv = document.createElement('div');
     streamDiv.className = 'stream';
     streamDiv.setAttribute('data-stream-id', stream.id);
@@ -126,13 +92,17 @@ function createStreamDiv(stream) {
 
     // Container for Twitch Embed
     const embedContainer = document.createElement('div');
-    embedContainer.className = 'embed-container';
+    if (isWatchStream) {
+        embedContainer.className = 'watching-embed-container';
+    } else {
+        embedContainer.className = 'embed-container';
+    }
     streamDiv.appendChild(embedContainer);
 
     // Twitch Embed
     new Twitch.Embed(embedContainer, {
-        width: '100%',
-        height: '100%',
+        width: embedWidth,
+        height: embedHeight,
         channel: stream.user_login,
         layout: 'video',
         muted: true,
@@ -149,7 +119,11 @@ function createStreamDiv(stream) {
     checkbox.checked = isChecked(stream.id);
     checkbox.addEventListener('change', () => {
         saveCheckedState(stream.id, checkbox.checked);
-        moveStreamDiv(stream.id, checkbox.checked);
+        if (checkbox.checked){
+            addStreamToWatchingList(stream, checkbox.checked);
+        } else {
+            removeStreamFromWatchingList(stream, checkbox.checked);
+        }
     });
     controlsDiv.appendChild(checkbox);
 
@@ -165,8 +139,29 @@ function createStreamDiv(stream) {
     return streamDiv;
 }
 
+export function isChecked(streamId) {
+    const checkedStreams = JSON.parse(localStorage.getItem('checkedStreams')) || [];
+    return checkedStreams.includes(streamId);
+}
 
+export function addStreamToWatchingList(stream) {
+    const watchingGrid = document.getElementById('watching-grid');
+    const streamDiv = createStreamDiv(stream, '100%', '100%', true);
+    watchingGrid.appendChild(streamDiv);
+    saveCheckedState(stream.id, true); // Save the checked state
+    const checkbox = streamDiv.querySelector(`input[type='checkbox']`);
+    if (checkbox) {
+        checkbox.checked = true;
+    }
+}
 
+export function removeStreamFromWatchingList(stream) {
+    const watchingGrid = document.getElementById('watching-grid');
+    const streamDiv = watchingGrid.querySelector(`div[data-stream-id="${stream.id}"]`);
+    if (streamDiv) {
+        watchingGrid.removeChild(streamDiv);
+    }
+}
 
 let currentMainStageStream = null; // Global variable to track the current main stage stream
 
@@ -197,18 +192,9 @@ export function setAsMainStage(stream) {
     });
     mainStreamContainer.appendChild(newMainStreamDiv);
 
-    // Remove the new main stage stream from the grid
-    const streamDiv = document.querySelector(`div[data-stream-id="${stream.id}"]`);
-    if (streamDiv) {
-        streamGrid.removeChild(streamDiv);
-        delete activeStreams[stream.id]; // Update the active streams list
-    }
-
     // Update visibility of the main stage
     toggleMainStageVisibility(mainStreamContainer);
 }
-
-
 
 export function toggleMainStageVisibility(mainStreamContainer) {
     const mainStageContainer = document.getElementById('main-stage');
@@ -240,50 +226,6 @@ export function saveCheckedState(streamId, isChecked) {
     localStorage.setItem('checkedStreams', JSON.stringify(checkedStreams));
 }
 
-export function loadCheckedState() {
-    const checkedStreams = JSON.parse(localStorage.getItem('checkedStreams')) || [];
-    checkedStreams.forEach(streamId => {
-        const checkbox = document.querySelector(`.stream-controls input[data-stream-id="${streamId}"]`);
-        if (checkbox) {
-            checkbox.checked = true;
-        }
-    });
-}
-
-export function isChecked(streamId) {
-    const checkedStreams = JSON.parse(localStorage.getItem('checkedStreams')) || [];
-    return checkedStreams.includes(streamId);
-}
-
-export function moveStreamDiv(streamId, isChecked) {
-    const streamDiv = document.querySelector(`div[data-stream-id="${streamId}"]`);
-    const streamGrid = document.getElementById('stream-grid');
-
-    // Calculate the distance to move
-    const distanceToMove = streamDiv.offsetTop - streamGrid.offsetTop;
-
-    if (isChecked) {
-        // Apply a negative transform to move it up
-        streamDiv.style.transform = `translateY(-${distanceToMove}px)`;
-    } else {
-        // Reset transform when moving it back to its original position
-        streamDiv.style.transform = 'translateY(0)';
-    }
-
-    // Ensure the transition has time to complete
-    setTimeout(() => {
-        if (isChecked) {
-            streamGrid.prepend(streamDiv);
-        } else {
-            streamGrid.appendChild(streamDiv);
-        }
-        // Reset the transform style
-        streamDiv.style.transform = '';
-    }, 1000); // Match this duration to the CSS transition duration
-}
-
-
-
 export function nextPageOfStreams(allStreams) {
     if (currentOffset >= allStreams.length) {
         return; // Do nothing if at the end
@@ -306,9 +248,6 @@ export function nextPageOfStreams(allStreams) {
 
     currentOffset = endIndex; // Update the offset after loading the streams
 }
-
-
-
 
 export function previousPageOfStreams(allStreams) {
     if (currentOffset === 0) {
@@ -338,14 +277,18 @@ export function previousPageOfStreams(allStreams) {
     currentOffset = startIndex;
 }
 
+export function populateWhosOnline(allStreams) {
+    const whosOnlineGrid = document.getElementById('whos-online-grid');
+    whosOnlineGrid.innerHTML = ''; // Clear existing content
 
-
-
-
-
-
-
-
+    allStreams.forEach(stream => {
+        const channelDiv = document.createElement('div');
+        channelDiv.className = 'whos-online-channel';
+        channelDiv.textContent = stream.user_name;
+        channelDiv.onclick = () => addStreamToWatchingList(stream);
+        whosOnlineGrid.appendChild(channelDiv);
+    });
+}
 
 export function setHideButtonListener(){
     const hideButton = document.getElementById('main-stage-hide-button');
