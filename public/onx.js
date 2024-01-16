@@ -47,12 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Search box event listener
     searchBox.addEventListener('input', () => {
-        const searchText = searchBox.value.toLowerCase();
-        const filteredStreams = allStreams.filter(stream => 
-            stream.title.toLowerCase().includes(searchText) || 
-            stream.user_name.toLowerCase().includes(searchText) // Add this condition to filter by channel name
-        );
-        searchBoxDisplayStreams(filteredStreams);
+        searchBoxDisplayStreams(allStreams);
     });
 
 
