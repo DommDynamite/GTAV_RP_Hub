@@ -87,8 +87,14 @@ function createStreamDiv(stream, embedWidth = '100%', embedHeight = '100%', isWa
     // Channel Name
     const channelNameDiv = document.createElement('div');
     channelNameDiv.className = 'channel-name';
-    channelNameDiv.textContent = stream.user_name || 'Channel Name'; // Replace with actual channel name if available
+    channelNameDiv.textContent = stream.user_name || 'Channel Name' ; // Replace with actual channel name if available
     streamDiv.appendChild(channelNameDiv);
+
+    // Stream Title
+    const streamTitleDiv = document.createElement('div');
+    streamTitleDiv.className = 'stream-title';
+    streamTitleDiv.textContent = stream.title || 'Stream Title';
+    streamDiv.appendChild(streamTitleDiv);
 
     // Container for Twitch Embed
     const embedContainer = document.createElement('div');
@@ -280,6 +286,8 @@ export function previousPageOfStreams(allStreams) {
 export function populateWhosOnline(allStreams) {
     const whosOnlineGrid = document.getElementById('whos-online-grid');
     whosOnlineGrid.innerHTML = ''; // Clear existing content
+    const whosOnlineNumber = document.getElementById('whos-online-number');
+    whosOnlineNumber.innerHTML = allStreams.length;
 
     allStreams.forEach(stream => {
         const channelDiv = document.createElement('div');
@@ -288,9 +296,36 @@ export function populateWhosOnline(allStreams) {
         channelDiv.onclick = () => addStreamToWatchingList(stream);
         whosOnlineGrid.appendChild(channelDiv);
     });
+
+
 }
 
-export function setHideButtonListener(){
+export function searchBoxDisplayStreams(allStreams) {
+    const streamGrid = document.getElementById('stream-grid');
+    streamGrid.innerHTML = ''; // Clear existing streams
+
+    const searchBox = document.getElementById('search-box');
+    const searchText = searchBox.value.trim().toLowerCase(); // Use `value` to get the input text
+
+    if (searchText === '' || searchText === 'search...') {
+        // If the search box is empty or default text, display streams normally
+        nextPageOfStreams(allStreams);
+    } else {
+        // Filter streams based on search text
+        allStreams.forEach(stream => {
+            if (stream.title.toLowerCase().includes(searchText)) {
+                // Check if the stream is not already in the DOM
+                if (!document.querySelector(`[data-stream-id="${stream.id}"]`)) {
+                    const streamDiv = createStreamDiv(stream);
+                    streamGrid.appendChild(streamDiv);
+                }
+            }
+        });
+    }
+}
+
+
+export function addEventListeners(){
     const hideButton = document.getElementById('main-stage-hide-button');
     const mainStreamContainer = document.getElementById('main-stream');
 
@@ -307,9 +342,6 @@ export function setHideButtonListener(){
     pageSelector.addEventListener('change', function() {
         const selectedPage = this.value;
         window.location.href = selectedPage; // Navigate to the selected page
-    });
-
-    
-    
+    });   
     
 }

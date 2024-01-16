@@ -47,13 +47,12 @@ body, html {
 .container {
   display: grid;
   justify-content: space-between;
-  height: calc(100% - 90px); /* Adjusted for navbar */
+  height: calc(100vh - 70px); /* Adjusted for navbar */
   box-sizing: border-box;
-  width: 100%;
+  grid-template-rows: 140px auto auto;
 }
 .stream-grid {
-  grid-column-start: 1;
-  grid-column-end: 1;
+  grid-column: 2;
   grid-row: 2;
   display: flex;
   flex-wrap: wrap;
@@ -62,6 +61,8 @@ body, html {
   padding-right: 10px;
   align-content:flex-start;
   justify-content: center;
+  padding-top: 1rem;
+  width: auto;
 }  
 .stream {
   background-color: #646668;
@@ -74,7 +75,7 @@ body, html {
   box-sizing: border-box; /* Include padding and borders in the element's total width and height */
 }
 .stream .channel-name {
-  margin-bottom: 10px;
+  /*margin-bottom: 10px;*/
   font-size: 1.5em;
   font-weight: bold;
   color: #fff;
@@ -82,6 +83,12 @@ body, html {
   padding: 5px;
   background-color: #333;
   display: block;
+}
+.stream .stream-title {
+  text-align: center;
+  font-size: 1em;
+  color:#c5c5c5;
+  margin: 2px;
 }
 .stream .embed-container {
   width:42vw;
@@ -107,10 +114,9 @@ body, html {
 }
 
 .sidebar {
-  grid-column: 2;
+  grid-column: 1;
   grid-row: 2;
-  width: fit-content;
-  min-width: 250px;
+  width: 315px;
   margin: 10;
   background-color: #23272a;
   padding: 20px;
@@ -291,6 +297,7 @@ display: none;
   grid-column-start: 1;
   grid-column-end: 3;
   max-width: 100vw;
+  height: 8rem;
   margin-bottom: 1rem;
   background-color: #201824;
 }
@@ -299,6 +306,16 @@ display: none;
   font-size:x-large;
   color: #777879;
   margin: 1rem;
+}
+
+#whos-online-number {
+  font-size:x-large;
+  color: #777879;
+  margin: 1rem;
+}
+
+#whos-online-title-block {
+  display: flex;
 }
 
 .whos-online-grid {
@@ -319,4 +336,14 @@ display: none;
   border-radius: 5px; /* Rounded corners for the border */
   flex: 0 0 auto;
   margin: .30rem;
+}
+
+#search-box {
+  width: 250px;
+}
+
+.site-footer {
+  position: fixed;
+  bottom: 0;
+  margin-bottom: 1rem;
 }

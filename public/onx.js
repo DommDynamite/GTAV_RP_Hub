@@ -1,4 +1,4 @@
-import { displayStreams, setAsMainStage, toggleMainStageVisibility, setHideButtonListener, nextPageOfStreams, previousPageOfStreams, populateWhosOnline} from '/Common.js'
+import { displayStreams, toggleMainStageVisibility, addEventListeners, nextPageOfStreams, previousPageOfStreams, searchBoxDisplayStreams} from '/Common.js'
 let allStreams = [];
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -21,12 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Handle error (e.g., show a message to the user)
         });
 
-    // Search box event listener
-    searchBox.addEventListener('input', () => {
-        const searchText = searchBox.value.toLowerCase();
-        const filteredStreams = allStreams.filter(stream => stream.title.toLowerCase().includes(searchText));
-        displayStreams(filteredStreams);
-    });
+    
 
     // Filter link event listeners
     filterLinks.forEach(link => {
@@ -50,8 +45,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Search box event listener
+    searchBox.addEventListener('input', () => {
+        const searchText = searchBox.value.toLowerCase();
+        const filteredStreams = allStreams.filter(stream => stream.title.toLowerCase().includes(searchText));
+        searchBoxDisplayStreams(filteredStreams);
+    });
 
-    setHideButtonListener();
+    addEventListeners();
 
     const scrollDownButton = document.getElementById('scroll-down-button');
     const scrollUpButton = document.getElementById('scroll-up-button');

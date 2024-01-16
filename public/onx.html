@@ -11,7 +11,7 @@
 <div class="navbar">
     <select id="page-selector" class="page-selector">
         <option value="onx.html" selected aria-selected="true">ONX RP</option>
-        <option value="nopixel.html">No Pixel RP</option>
+        <!--<option value="nopixel.html">No Pixel RP</option>-->
         <!-- Add more options for additional pages as needed -->
     </select>
 </div>
@@ -33,7 +33,11 @@
 <div class="container">
     
     <div id="whos-online" class="whos-online">
-        <h1 id="whos-online-title">Who's Online</h1>
+        <div id="whos-online-title-block">
+            <h1 id="whos-online-title">Who's Online -</h1>
+            <h2 id="whos-online-number"></h2>
+        </div>
+        
         <div class="whos-online-grid" id="whos-online-grid">
 
         </div>
@@ -61,8 +65,15 @@
             <button id="scroll-up-button" class="scroll-button">Up</button>
             <button id="scroll-down-button" class="scroll-button">Down</button>
         </div>
+
+        <footer class="site-footer">
+            <p>&copy; 2024 GTARolePlay.Live All rights reserved.</p>
+            <p>Contact: pressstartinteractive@gmail.com</p>
+        </footer>
     </div>
 </div>
+
+
 
 <script src="https://embed.twitch.tv/embed/v1.js"></script>
 <script type="module" src="onx.js"></script>
