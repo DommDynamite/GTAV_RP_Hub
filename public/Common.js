@@ -3,6 +3,7 @@ let loadedStreamPositions = {};
 let currentOffset = 0;
 const limit = 6; // Number of streams to load each time
 const initLoadLimit = 6;
+let everyStream = {};
 
 
 
@@ -75,6 +76,8 @@ export function displayStreams(streams, titleFilters, tagFilters) {
 
     populateWhosOnline(filteredStreams);
 
+    everyStream = filteredStreams;
+
     return filteredStreams;
 
 }
@@ -118,31 +121,49 @@ function createStreamDiv(stream, embedWidth = '100%', embedHeight = '100%', isWa
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'stream-controls';
 
-    // Add checkbox
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.setAttribute('data-stream-id', stream.id);
-    checkbox.checked = isChecked(stream.id);
-    checkbox.addEventListener('change', () => {
-        saveCheckedState(stream.id, checkbox.checked);
-        if (checkbox.checked){
-            addStreamToWatchingList(stream, checkbox.checked);
-        } else {
-            removeStreamFromWatchingList(stream, checkbox.checked);
-        }
+    // Add star image
+    const starImg = document.createElement('img');
+    starImg.src = isChecked(stream.id) ? 'img/Star-Filled.png' : 'img/Star-Unfilled.png';
+    starImg.className = 'star-img';
+    starImg.title = 'Add to Watching'; // Tooltip text
+    starImg.setAttribute('data-stream-id', stream.id);
+    starImg.addEventListener('click', () => {
+        toggleStar(stream.id, starImg);
     });
-    controlsDiv.appendChild(checkbox);
+    controlsDiv.appendChild(starImg);
 
-    // Add button
-    const button = document.createElement('button');
-    button.textContent = 'Main Stage';
-    button.addEventListener('click', () => setAsMainStage(stream));
-    controlsDiv.appendChild(button);
+    // Add main stage image
+    const mainStageImg = document.createElement('img');
+    mainStageImg.src = 'img/main_stage.png'; // Replace with the actual path to your main_stage.png
+    mainStageImg.className = 'main-stage-img';
+    mainStageImg.title = 'Set as Main Stage'; // Tooltip text
+    mainStageImg.setAttribute('data-stream-id', stream.id);
+    mainStageImg.addEventListener('click', () => setAsMainStage(stream));
+    controlsDiv.appendChild(mainStageImg);
 
     // Append controls to streamDiv
     streamDiv.appendChild(controlsDiv);
 
     return streamDiv;
+}
+
+function toggleStar(streamId, imgElement) {
+    const isChecked = !imgElement.classList.contains('star-checked');
+
+    // Find the stream object from allStreams or another source
+    const stream = everyStream.find(s => s.id === streamId);
+
+    if (stream && isChecked) {
+        imgElement.src = 'img/Star-Filled.png';
+        imgElement.classList.add('star-checked');
+        addStreamToWatchingList(stream); // Pass the stream object
+    } else if (stream) {
+        imgElement.src = 'img/Star-Unfilled.png';
+        imgElement.classList.remove('star-checked');
+        removeStreamFromWatchingList(stream); // Pass the stream object
+    }
+
+    saveCheckedState(streamId, isChecked);
 }
 
 export function isChecked(streamId) {
@@ -153,8 +174,18 @@ export function isChecked(streamId) {
 export function addStreamToWatchingList(stream) {
     const watchingGrid = document.getElementById('watching-grid');
     const streamDiv = createStreamDiv(stream, '100%', '100%', true);
+
+    // Find the star image within the streamDiv and update its state
+    const starImg = streamDiv.querySelector('.star-img');
+    if (starImg) {
+        starImg.src = 'img/Star-Filled.png';
+        starImg.classList.add('star-checked');
+    }
+
     watchingGrid.appendChild(streamDiv);
     saveCheckedState(stream.id, true); // Save the checked state
+
+    // Update checkbox state if present
     const checkbox = streamDiv.querySelector(`input[type='checkbox']`);
     if (checkbox) {
         checkbox.checked = true;
@@ -163,9 +194,22 @@ export function addStreamToWatchingList(stream) {
 
 export function removeStreamFromWatchingList(stream) {
     const watchingGrid = document.getElementById('watching-grid');
-    const streamDiv = watchingGrid.querySelector(`div[data-stream-id="${stream.id}"]`);
-    if (streamDiv) {
-        watchingGrid.removeChild(streamDiv);
+    const streamGrid = document.getElementById('stream-grid');
+
+    // Remove stream from watching grid
+    const watchingStreamDiv = watchingGrid.querySelector(`div[data-stream-id="${stream.id}"]`);
+    if (watchingStreamDiv) {
+        watchingGrid.removeChild(watchingStreamDiv);
+    }
+
+    // Find and update the corresponding stream in the stream grid
+    const streamGridStreamDiv = streamGrid.querySelector(`div[data-stream-id="${stream.id}"]`);
+    if (streamGridStreamDiv) {
+        const starImg = streamGridStreamDiv.querySelector('.star-img');
+        if (starImg) {
+            starImg.src = 'img/Star-Unfilled.png';
+            starImg.classList.remove('star-checked');
+        }
     }
 }
 

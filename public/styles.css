@@ -203,6 +203,24 @@ input[type="text"] {
 
 }
 
+.star-img {
+  cursor: pointer;
+  width: 24px; /* Adjust the size as needed */
+  height: auto;
+  margin-right: 10px;
+}
+
+.star-checked {
+  /* Additional styles for checked state if needed */
+}
+
+.main-stage-img {
+  cursor: pointer;
+  width: 24px; /* Adjust the size as needed */
+  height: auto;
+}
+
+
 .stream-controls input,
 .stream-controls button {
   /* Style your checkbox and button here */
@@ -278,6 +296,7 @@ display: none;
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
+  justify-content: right;
 }
 
 .scroll-button {
@@ -304,13 +323,13 @@ display: none;
 
 #whos-online-title {
   font-size:x-large;
-  color: #777879;
+  color: #e4e4e4;
   margin: 1rem;
 }
 
 #whos-online-number {
   font-size:x-large;
-  color: #777879;
+  color: #e4e4e4;
   margin: 1rem;
 }
 
@@ -346,4 +365,16 @@ display: none;
   position: fixed;
   bottom: 0;
   margin-bottom: 1rem;
+}
+
+.scroll-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 6rem;
+}
+
+.scroll-icon {
+  width: 80px; /* Adjust as necessary */
+  height: 80px; /* Adjust as necessary */
 }
