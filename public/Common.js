@@ -13,6 +13,10 @@ export function displayStreams(streams, titleFilters, tagFilters) {
 
     const uniqueStreamIds = new Set(); // Set to keep track of unique stream IDs
 
+    if (streams.length === 0) {
+        return
+    }
+
     // Apply title and tag filters
     const filteredStreams = streams.filter(stream => {
         const titleMatches = titleFilters.some(filter => {
@@ -78,6 +82,8 @@ export function displayStreams(streams, titleFilters, tagFilters) {
 
     everyStream = filteredStreams;
 
+    loadCheckedState(everyStream);
+
     return filteredStreams;
 
 }
@@ -86,6 +92,9 @@ function createStreamDiv(stream, embedWidth = '100%', embedHeight = '100%', isWa
     const streamDiv = document.createElement('div');
     streamDiv.className = 'stream';
     streamDiv.setAttribute('data-stream-id', stream.id);
+    const childDiv = document.createElement('div');
+    
+
 
     // Channel Name
     const channelNameDiv = document.createElement('div');
@@ -97,16 +106,18 @@ function createStreamDiv(stream, embedWidth = '100%', embedHeight = '100%', isWa
     const streamTitleDiv = document.createElement('div');
     streamTitleDiv.className = 'stream-title';
     streamTitleDiv.textContent = stream.title || 'Stream Title';
-    streamDiv.appendChild(streamTitleDiv);
+    childDiv.appendChild(streamTitleDiv);
 
     // Container for Twitch Embed
     const embedContainer = document.createElement('div');
     if (isWatchStream) {
         embedContainer.className = 'watching-embed-container';
+        childDiv.className = 'watching-title-video-container';
     } else {
         embedContainer.className = 'embed-container';
+        childDiv.className = 'stream-title-video-container';
     }
-    streamDiv.appendChild(embedContainer);
+    childDiv.appendChild(embedContainer);
 
     // Twitch Embed
     new Twitch.Embed(embedContainer, {
@@ -142,7 +153,9 @@ function createStreamDiv(stream, embedWidth = '100%', embedHeight = '100%', isWa
     controlsDiv.appendChild(mainStageImg);
 
     // Append controls to streamDiv
-    streamDiv.appendChild(controlsDiv);
+    childDiv.appendChild(controlsDiv);
+
+    streamDiv.appendChild(childDiv);
 
     return streamDiv;
 }
@@ -242,19 +255,25 @@ export function setAsMainStage(stream) {
     });
     mainStreamContainer.appendChild(newMainStreamDiv);
 
+    mainStageContainer.style.height = '41rem';
     // Update visibility of the main stage
     toggleMainStageVisibility(mainStreamContainer);
 }
 
 export function toggleMainStageVisibility(mainStreamContainer) {
     const mainStageContainer = document.getElementById('main-stage');
+    const hideButton = document.getElementsByClassName('main-stream-hide-button');
 
     if (mainStreamContainer.children.length === 0) {
         mainStageContainer.style.display = 'none';
+        hideButton.style.display = 'none';
+        hideButton.classList.add('hidden');
     } else {
         mainStageContainer.classList.remove('hidden');
         mainStageContainer.style.display = 'block'; // Make the element visible
         mainStageContainer.style.animationPlayState = 'running';
+        hideButton.style.display = 'block';
+        hideButton.classList.remove('hidden');
     }
 }
 
@@ -297,6 +316,7 @@ export function nextPageOfStreams(allStreams) {
     });
 
     currentOffset = endIndex; // Update the offset after loading the streams
+    streamGrid.scrollTop = 0;
 }
 
 export function previousPageOfStreams(allStreams) {
@@ -371,6 +391,28 @@ export function searchBoxDisplayStreams(allStreams) {
         });
     }
 }
+
+export function loadCheckedState(allStreams) {
+    const watchingGrid = document.getElementById('watching-grid');
+    const checkedStreams = JSON.parse(localStorage.getItem('checkedStreams')) || [];
+
+    checkedStreams.forEach(streamId => {
+        // Find the stream data from allStreams
+        const stream = allStreams.find(s => s.id === streamId);
+        if (stream) {
+            // Create a stream div and append it to the watching grid
+            const streamDiv = createStreamDiv(stream, '100%', '100%', true);
+            watchingGrid.appendChild(streamDiv);
+
+            // Set the checkbox (or equivalent control) as checked
+            const checkbox = streamDiv.querySelector(`input[type='checkbox']`);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        }
+    });
+}
+
 
 
 export function addEventListeners(){

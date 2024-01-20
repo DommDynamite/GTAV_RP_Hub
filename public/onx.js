@@ -1,5 +1,36 @@
-import { displayStreams, toggleMainStageVisibility, addEventListeners, nextPageOfStreams, previousPageOfStreams, searchBoxDisplayStreams} from '/Common.js'
+import { displayStreams, toggleMainStageVisibility, addEventListeners, nextPageOfStreams, previousPageOfStreams, searchBoxDisplayStreams, loadCheckedState} from '/Common.js'
 let allStreams = [];
+
+let retryCount = 0;
+const maxRetries = 5; // Maximum number of retries
+const retryDelay = 3000; // Delay between retries in milliseconds
+
+function loadAndDisplayStreams() {
+    const titleFilters = ['ONX', 'ONXRP', 'ONX.gg', 'ONX RP', 'OnxRP', 'Onx RP', 'onxrp', 'onx RP', '!ONX'];
+    const tagFilters = []; // Add tag filters if needed
+    
+    fetch('/api/streams')
+        .then(response => response.json())
+        .then(streams => {
+            if (streams.length > 0) {
+                allStreams = displayStreams(streams, titleFilters, tagFilters); // Function to display streams
+                retryCount = 0; // Reset retry count on successful load
+            } else if (retryCount < maxRetries) {
+                // Retry after a delay
+                setTimeout(loadAndDisplayStreams, retryDelay);
+                retryCount++;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading streams:', error);
+            if (retryCount < maxRetries) {
+                setTimeout(loadAndDisplayStreams, retryDelay);
+                retryCount++;
+            }
+            // Optionally, handle the error (e.g., show a message to the user)
+        });
+}
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const mainStreamContainer = document.getElementById('main-stream');
@@ -7,21 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchBox = document.getElementById('search-box');
     const filterLinks = document.querySelectorAll('.filter-link');
     //let allStreams = [];
-    const titleFilters = ['ONX', 'ONXRP', 'ONX.gg', 'ONX RP', 'OnxRP', 'Onx RP', 'onxrp', 'onx RP', '!ONX'];
-    const tagFilters = []; // Add tag filters if needed
-
-    fetch('/api/streams')
-        .then(response => response.json())
-        .then(streams => {
-            //allStreams = streams; // Save all fetched streams
-            allStreams = displayStreams(streams, titleFilters, tagFilters); // Display all streams initially
-        })
-        .catch(error => {
-            console.error('Error loading streams:', error);
-            // Handle error (e.g., show a message to the user)
-        });
-
     
+
+    loadAndDisplayStreams();  
 
     // Filter link event listeners
     filterLinks.forEach(link => {
@@ -75,4 +94,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initially hide the main stage if it's empty
     toggleMainStageVisibility(mainStreamContainer);
+
 });
