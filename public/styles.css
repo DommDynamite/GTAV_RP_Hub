@@ -49,7 +49,7 @@ body, html {
   justify-content: space-between;
   height: calc(100vh - 70px); /* Adjusted for navbar */
   box-sizing: border-box;
-  grid-template-rows: 140px auto auto;
+  grid-template-rows: 140px auto;
 }
 .stream-grid {
   grid-column: 2;
@@ -397,9 +397,10 @@ display: none;
 }
 
 .site-footer {
-  position: fixed;
+  position: bottom;
   bottom: 0;
   margin-bottom: 1rem;
+  margin-top: 50rem;
 }
 
 .scroll-button {
