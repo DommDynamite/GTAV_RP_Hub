@@ -47,7 +47,7 @@ body, html {
 .container {
   display: grid;
   justify-content: space-between;
-  height: calc(100vh - 70px); /* Adjusted for navbar */
+  height: 70vh; /* Adjusted for navbar */
   box-sizing: border-box;
   grid-template-rows: 140px auto;
 }
@@ -397,10 +397,8 @@ display: none;
 }
 
 .site-footer {
-  position: bottom;
-  bottom: 0;
   margin-bottom: 1rem;
-  margin-top: 50rem;
+  margin-top: 30rem;
 }
 
 .scroll-button {
@@ -413,4 +411,8 @@ display: none;
 .scroll-icon {
   width: 80px; /* Adjust as necessary */
   height: 80px; /* Adjust as necessary */
+}
+
+.kofi a {
+  color: #453ae9;
 }
